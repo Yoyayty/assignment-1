@@ -6,7 +6,8 @@ const router = new Router();
 router.get('/books', async (ctx) => {
     const filters = ctx.query.filters as Array<{ from?: number, to?: number }>;
 
-    if (!validateFilters(filters)) {
+    if ((filters && filters.length) &&
+        !validateFilters(filters)) {
         ctx.status = 400;
         ctx.body = { error: "Invalid filters provided." };
         return;

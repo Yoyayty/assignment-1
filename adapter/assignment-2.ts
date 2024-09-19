@@ -13,9 +13,8 @@ export interface Book {
 };
 
 async function listBooks(filters?: Array<{ from?: number, to?: number }>): Promise<Book[]> {
-    console.log(books)
     if (!filters || filters.length === 0) {
-        return books; // No filters, return all books
+        return books;
     }
 
     return books;

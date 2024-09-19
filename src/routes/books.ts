@@ -4,7 +4,7 @@ import { Book } from '../../adapter/assignment-2';
 
 const router = new Router();
 
-router.get('/', async (ctx) => {
+router.get('/books', async (ctx) => {
     const filters = ctx.query.filters as Array<{ from?: number, to?: number }>;
 
     if ((filters && filters.length) &&
@@ -15,7 +15,6 @@ router.get('/', async (ctx) => {
     }
 
     try {
-
         const books = await assignment.listBooks(filters);
         ctx.body = books;
     } catch (error) {
@@ -25,47 +24,31 @@ router.get('/', async (ctx) => {
     }
 });
 
-
-// POST route to create or update a book
-router.post('/', async (ctx) => {
+// POST book to create or update
+router.post('/books', async (ctx) => {
     try {
         const book = ctx.request.body as Book;
-        if (!book.name || !book.author || !book.price) {
-            ctx.status = 400;
-            ctx.body = { error: "Book name, author, and price are required." };
-            return;
-        }
-
         const bookId = await assignment.createOrUpdateBook(book);
         ctx.status = 200;
         ctx.body = { id: bookId, message: "Book created/updated successfully." };
     } catch (error) {
-        console.error("Error in POST /books route:", error);
         ctx.status = 500;
-        ctx.body = { error: "Failed to create/update book due to an internal error." };
+        ctx.body = { error: "Failed to create/update book." };
     }
 });
 
-// DELETE route to remove a book by ID
-router.delete('/:id', async (ctx) => {
+// DELETE book by id
+router.delete('/books/:id', async (ctx) => {
     try {
         const bookId = ctx.params.id;
-        if (!bookId) {
-            ctx.status = 400;
-            ctx.body = { error: "Book ID is required." };
-            return;
-        }
-
         await assignment.removeBook(bookId);
         ctx.status = 200;
         ctx.body = { message: "Book deleted successfully." };
     } catch (error) {
-        console.error("Error in DELETE /books/:id route:", error);
         ctx.status = 500;
-        ctx.body = { error: "Failed to delete book due to an internal error." };
+        ctx.body = { error: "Failed to delete book." };
     }
 });
-
 
 function validateFilters(filters: any): boolean {
     // Check if filters exist and are an array

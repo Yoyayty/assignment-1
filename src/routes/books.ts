@@ -4,7 +4,7 @@ import { Book } from '../../adapter/assignment-2';
 
 const router = new Router();
 
-router.get('/books', async (ctx) => {
+router.get('/', async (ctx) => {
     const filters = ctx.query.filters as Array<{ from?: number, to?: number }>;
 
     if ((filters && filters.length) &&
@@ -25,7 +25,7 @@ router.get('/books', async (ctx) => {
 });
 
 // POST book to create or update
-router.post('/books', async (ctx) => {
+router.post('/', async (ctx) => {
     try {
         const book = ctx.request.body as Book;
         const bookId = await assignment.createOrUpdateBook(book);
@@ -38,7 +38,7 @@ router.post('/books', async (ctx) => {
 });
 
 // DELETE book by id
-router.delete('/books/:id', async (ctx) => {
+router.delete('/:id', async (ctx) => {
     try {
         const bookId = ctx.params.id;
         await assignment.removeBook(bookId);

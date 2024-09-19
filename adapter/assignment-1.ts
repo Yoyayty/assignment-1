@@ -1,4 +1,4 @@
-import books from './../mcmasteful-book-list.json';
+import { connect } from '../src/db';
 
 export interface Book {
     name: string,
@@ -11,16 +11,33 @@ export interface Book {
 
 // Function to filter books based on price range
 async function listBooks(filters?: Array<{ from?: number, to?: number }>): Promise<Book[]> {
-    if (!filters || filters.length === 0) {
-        return books; // No filters, return all books
+    const db = await connect();
+    const query: any = {};
+    const collection = db.collection('books') || null;
+
+    if (filters && filters.length > 0) {
+        query.price = {
+            $and: filters.map(filter => ({
+                $gte: filter.from ?? 0,
+                $lte: filter.to ?? Number.MAX_VALUE
+            }))
+        };
     }
 
-    return books.filter(book =>
-        filters.some(filter =>
-            (filter.from === undefined || book.price >= filter.from) &&
-            (filter.to === undefined || book.price <= filter.to)
-        )
-    );
+    try {
+        const result = await collection.find(query).toArray();
+        return result.map(doc => ({
+            id: doc._id.toString(),
+            name: doc.name,
+            author: doc.author,
+            description: doc.description,
+            price: doc.price,
+            image: doc.image
+        }));
+    } catch (error) {
+        console.error("Failed to fetch books:", error);
+        return [];
+    }
 }
 
 

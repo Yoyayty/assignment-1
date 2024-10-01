@@ -1,19 +1,34 @@
 import Router from 'koa-router';
 import assignment from '../../adapter';
 import { Book } from '../../adapter/assignment-2';
+import { Filter } from '../../adapter/assignment-3';
 
 const router = new Router();
 
 router.get('/', async (ctx) => {
-  const filters = ctx.query.filters as Array<{ from?: number; to?: number }>;
+  // Extract query parameters
+  const filters: Filter[] = [];
 
-  if (filters && filters.length && !validateFilters(filters)) {
-    ctx.status = 400;
-    ctx.body = { error: 'Invalid filters provided.' };
-    return;
+  // Add price range filters (from/to)
+  if (ctx.query.from || ctx.query.to) {
+    const priceFilter: Filter = {};
+    if (ctx.query.from) priceFilter.from = parseFloat(ctx.query.from.toString());
+    if (ctx.query.to) priceFilter.to = parseFloat(ctx.query.to.toString());
+    filters.push(priceFilter);
+  }
+
+  // Add name filter
+  if (ctx.query.name) {
+    filters.push({ name: String(ctx.query.name) });
+  }
+
+  // Add author filter
+  if (ctx.query.author) {
+    filters.push({ author: String(ctx.query.author) });
   }
 
   try {
+    // Call the new listBooks function from assignment-3
     const books = await assignment.listBooks(filters);
     ctx.body = books;
   } catch (error) {

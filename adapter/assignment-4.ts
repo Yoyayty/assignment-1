@@ -118,7 +118,7 @@ async function placeBooksOnShelf(
     // Update the count if the book is already on the shelf
     await shelvesCollection.updateOne(
       { bookId, shelf },
-      { $set: { count: numberOfBooks } }  // Increment the existing count
+      { $inc: { count: numberOfBooks } }  // Increment the existing count
     );
   } else {
     // Insert a new entry if the book is not on the shelf

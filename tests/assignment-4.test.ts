@@ -26,6 +26,10 @@ afterAll(async () => {
     await mongod.stop();
 });
 
+beforeEach(async () => {
+    const shelvesCollection = db.db('bookstore').collection('shelves');
+    await shelvesCollection.deleteMany({});
+});
 
 describe('listBooks', () => {
     it('should return books with stock levels', async () => {
@@ -74,10 +78,12 @@ describe('placeBooksOnShelf', () => {
 
         // Place books on shelf
         await assignment.placeBooksOnShelf('book1', 10, 'A');
+        await assignment.placeBooksOnShelf('book1', 10, 'A');
+        await assignment.placeBooksOnShelf('book2', 10, 'B');
 
         // Assert stock is updated
         const stock = await shelvesCollection.findOne({ bookId: 'book1', shelf: 'A' }) as any;
-        expect(stock.count).toBe(10);
+        expect(stock.count).toBe(20);
     });
 });
 
@@ -98,20 +104,18 @@ describe('orderBooks', () => {
 
 describe('findBookOnShelf', () => {
     it('should return the correct shelf and stock for a book', async () => {
-        beforeEach(async () => {
-            const shelvesCollection = db.db('bookstore').collection('shelves');
-            await shelvesCollection.deleteMany({});
-        });
 
         // Add more books to shelf A (this simulates calling placeBooksOnShelf to update the count)
         await assignment.placeBooksOnShelf('book1', 5, 'A');
+        await assignment.placeBooksOnShelf('book1', 10, 'B');
 
         // Call findBookOnShelf
         const shelves = await assignment.findBookOnShelf('book1');
 
         // Assert correct stock is returned
         expect(shelves).toEqual([
-            { shelf: 'A', count: 5 },  // Expect 12 books on shelf A now
+            { shelf: 'A', count: 5 },
+            { shelf: 'B', count: 10 },
         ]);
     });
 });

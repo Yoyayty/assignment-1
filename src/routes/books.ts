@@ -2,6 +2,7 @@ import Router from 'koa-router';
 import assignment from '../../adapter';
 import { Book } from '../../adapter/assignment-2';
 import { Filter } from '../../adapter/assignment-3';
+import { BookID, OrderId, ShelfId } from '../../adapter/assignment-4';
 
 const router = new Router();
 
@@ -84,5 +85,70 @@ function validateFilters(filters: any): boolean {
     return from <= to;
   });
 }
+
+// POST place books on a shelf
+router.post('/shelf', async (ctx) => {
+  try {
+    const { bookId, numberOfBooks, shelf } = ctx.request.body as { bookId: string, numberOfBooks: number, shelf: ShelfId };
+    await assignment.placeBooksOnShelf(bookId, numberOfBooks, shelf);
+    ctx.status = 200;
+    ctx.body = { message: 'Books placed on shelf successfully.' };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Failed to place books on shelf.' };
+  }
+});
+
+// POST place an order for books
+router.post('/orders', async (ctx) => {
+  try {
+    const bookIds = ctx.request.body as BookID[];
+    const order = await assignment.orderBooks(bookIds);
+    ctx.status = 200;
+    ctx.body = { orderId: order.orderId, message: 'Order placed successfully.' };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Failed to place order.' };
+  }
+});
+
+// GET find books on a shelf by book ID
+router.get('/shelf/:bookId', async (ctx) => {
+  try {
+    const bookId = ctx.params.bookId;
+    const shelves = await assignment.findBookOnShelf(bookId);
+    ctx.status = 200;
+    ctx.body = shelves;
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Failed to find book on shelves.' };
+  }
+});
+
+// POST fulfill an order
+router.post('/fulfill', async (ctx) => {
+  try {
+    const { orderId, booksFulfilled } = ctx.request.body as { orderId: OrderId, booksFulfilled: Array<{ book: BookID, shelf: ShelfId, numberOfBooks: number }> };
+    await assignment.fulfilOrder(orderId, booksFulfilled);
+    ctx.status = 200;
+    ctx.body = { message: 'Order fulfilled successfully.' };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Failed to fulfill order.' };
+  }
+});
+
+// GET list all orders
+router.get('/orders', async (ctx) => {
+  try {
+    const orders = await assignment.listOrders();
+    ctx.status = 200;
+    ctx.body = orders;
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: 'Failed to fetch orders.' };
+  }
+});
+
 
 export default router;

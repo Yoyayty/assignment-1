@@ -1,8 +1,13 @@
 // db.ts
 import { MongoClient, Db } from 'mongodb';
 
-const uri = 'mongodb://mongo:27017';
-const client = new MongoClient(uri);
+let uri = 'mongodb://mongo:27017';
+let client = new MongoClient(uri);
+
+export async function setUri(newUri: string) {
+  uri = newUri;
+  client = new MongoClient(uri);
+}
 
 export async function connect(): Promise<Db> {
   try {

@@ -1,6 +1,6 @@
 import previous_assignment from './assignment-3';
 import { connect } from '../db';
-import { ObjectId } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 export type BookID = string;
 
@@ -108,21 +108,21 @@ async function placeBooksOnShelf(
   shelf: ShelfId,
 ): Promise<void> {
   const db = await connect();
+
   const shelvesCollection = db.collection('shelves');
 
+  // Check if a book is already on the shelf
   const existingEntry = await shelvesCollection.findOne({ bookId, shelf });
 
   if (existingEntry) {
+    // Update the count if the book is already on the shelf
     await shelvesCollection.updateOne(
-      { _id: new ObjectId(shelf), bookId },
-      { $inc: { count: numberOfBooks } }
+      { bookId, shelf },
+      { $set: { count: numberOfBooks } }  // Increment the existing count
     );
   } else {
-    await shelvesCollection.insertOne({
-      id: shelf,
-      bookId,
-      count: numberOfBooks,
-    });
+    // Insert a new entry if the book is not on the shelf
+    await shelvesCollection.insertOne({ bookId, shelf, count: numberOfBooks });
   }
 }
 
@@ -151,7 +151,7 @@ async function findBookOnShelf(
   const shelvesCollection = db.collection('shelves');
 
   const shelves = await shelvesCollection
-    .find({ book })
+    .find({ bookId: book })
     .toArray();
 
   return shelves.map((shelf) => ({
@@ -172,39 +172,46 @@ async function fulfilOrder(
   const ordersCollection = db.collection('orders');
   const shelvesCollection = db.collection('shelves');
 
+  // Convert order string to ObjectId if necessary
   const orderEntity = await ordersCollection.findOne({ _id: new ObjectId(order) });
 
+
   if (!orderEntity) {
-    throw new Error(`Order with ID ${order} not found`);
+    throw new Error('Order not found');
   }
 
-  for (const { book, shelf, numberOfBooks } of booksFulfilled) {
-    const shelfStock = await shelvesCollection.findOne({ bookId: book, shelf });
+  // Iterate through the books to be fulfilled
+  for (const bookFulfilled of booksFulfilled) {
+    // Find the stock on the shelf
+    const stockOnShelf = await shelvesCollection.findOne({ bookId: bookFulfilled.book, shelf: bookFulfilled.shelf });
 
-    if (!shelfStock || shelfStock.count < numberOfBooks) {
-      throw new Error(
-        `Not enough stock for book ${book} on shelf ${shelf}. Requested: ${numberOfBooks}, Available: ${shelfStock?.count || 0}`,
+    if (stockOnShelf && stockOnShelf.count >= bookFulfilled.numberOfBooks) {
+      // Subtract the fulfilled number from stock
+      await shelvesCollection.updateOne(
+        { bookId: bookFulfilled.book, shelf: bookFulfilled.shelf },
+        { $inc: { count: -bookFulfilled.numberOfBooks } }  // Decrease stock
       );
+    } else {
+      throw new Error('Not enough stock to fulfil the order');
     }
   }
 
-  for (const { book, shelf, numberOfBooks } of booksFulfilled) {
-    await shelvesCollection.updateOne(
-      { bookId: book, shelf },
-      { $inc: { count: -numberOfBooks } },
-    );
-  }
-
-  await ordersCollection.updateOne(
-    { _id: new ObjectId(order) },
-    { $set: { complete: true, fulfilledAt: new Date() } },
-  );
+  // Mark the order as complete
+  await ordersCollection.updateOne({ _id: new ObjectId(order) }, { $set: { complete: true } });
 }
 
 async function listOrders(): Promise<
   Array<{ orderId: OrderId; books: Record<BookID, number> }>
 > {
-  throw new Error('Todo');
+  const db = await connect(); // Ensure you're connected to the database
+  const ordersCollection = db.collection('orders');
+
+  const orders = await ordersCollection.find().toArray();
+
+  return orders.map(order => ({
+    orderId: order._id.toHexString(), // Use order ID as string
+    books: order.books, // Assuming `order.books` is in the correct format
+  }));
 }
 
 const assignment = 'assignment-4';

@@ -1,8 +1,8 @@
 import Koa from 'koa';
 import Router from '@koa/router';
 import bodyParser from 'koa-bodyparser';
-import swagger from '../swagger/swagger.json';
 import { koaSwagger } from 'koa2-swagger-ui';
+import swagger from '../build/swagger.json';
 
 const app = new Koa();
 const router = new Router();

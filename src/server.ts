@@ -1,14 +1,31 @@
-// src/server.ts
 import Koa from 'koa';
+import Router from '@koa/router';
 import bodyParser from 'koa-bodyparser';
-import qs from 'koa-qs';
-import booksRouter from './routes/books';
+import swagger from '../swagger/swagger.json';
+import { koaSwagger } from 'koa2-swagger-ui';
 
 const app = new Koa();
-qs(app);
+const router = new Router();
 
+// Define a simple route
+router.get('/hello/:name', (ctx) => {
+  ctx.body = `Hello, ${ctx.params.name}`;
+});
+
+// Use middleware
 app.use(bodyParser());
-app.use(booksRouter.routes()).use(booksRouter.allowedMethods());
+app.use(router.routes());
+app.use(router.allowedMethods());
+app.use(
+  koaSwagger({
+    routePrefix: '/docs', // The path to view the documentation
+    specPrefix: '/docs/spec',
+    exposeSpec: true,
+    swaggerOptions: {
+      spec: swagger,
+    },
+  })
+);
 
 const PORT = 3000;
 app.listen(PORT, () => {

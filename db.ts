@@ -9,13 +9,13 @@ export async function setUri(newUri: string) {
   client = new MongoClient(uri);
 }
 
-export async function connect(): Promise<Db> {
+export async function connect(dbName: string = 'bookstore'): Promise<Db> {
   try {
     await client.connect();
     console.log('Connected successfully to MongoDB');
-    return client.db('bookstore'); // Specify the database name
+    return client.db(dbName); // Use the specified database name
   } catch (e) {
     console.error('Failed to connect to MongoDB', e);
-    throw new Error('Failed to connect to MongoDB'); // Throw an error instead of returning null
+    throw new Error('Failed to connect to MongoDB');
   }
 }

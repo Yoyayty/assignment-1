@@ -30,3 +30,10 @@ afterEach(async (ctx: CustomTestContext) => {
         await ctx.close();
     }
 });
+
+export async function setupServer(): Promise<{ server: Server; address: string }> {
+    const port = 0;
+    const server = await startServer(port);
+    const address = `http://localhost:${(server.address() as any).port}`;
+    return { server, address };
+}

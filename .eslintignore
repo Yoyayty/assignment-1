@@ -1,2 +1,4 @@
 swagger/
 src/routes/routes.ts
+/build
+/client

@@ -1,15 +1,14 @@
 {
     "entryFile": "src/server.ts",
-    "noImplicitAdditionalProperties": "silently-remove-extras",
+    "noImplicitAdditionalProperties": "throw-on-extras",
     "controllerPathGlobs": [
         "src/routes/*.route.ts"
     ],
     "spec": {
-        "outputDirectory": "swagger",
+        "outputDirectory": "./build",
         "specVersion": 3
     },
     "routes": {
-        "basePath": "/api",
         "middleware": "koa",
         "routesDir": "src/routes"
     }

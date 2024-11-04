@@ -4,12 +4,12 @@
   "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education.",
   "main": "index.js",
   "scripts": {
-    "start-server": "ts-node src/server.ts",
-    "lint": "eslint .",
-    "fmt": "prettier --write .",
-    "type-check": "tsc --noEmit",
-    "test": "vitest",
-    "test:ci": "vitest run"
+    "start-server": "./generate-openapi.sh && ts-node src/server.ts",
+    "lint": "./generate-openapi.sh && eslint .",
+    "fmt": "./generate-openapi.sh && prettier --write .",
+    "type-check": "./generate-openapi.sh && tsc --noEmit",
+    "test": "./generate-openapi.sh && vitest",
+    "test:ci": "./generate-openapi.sh && vitest run"
   },
   "keywords": [],
   "author": "",

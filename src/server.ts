@@ -1,8 +1,8 @@
 import Koa from 'koa';
 import Router from '@koa/router';
 import bodyParser from 'koa-bodyparser';
+import swagger from '../swagger/swagger.json';
 import { koaSwagger } from 'koa2-swagger-ui';
-import swagger from '../build/swagger.json';
 
 const app = new Koa();
 const router = new Router();
@@ -31,3 +31,5 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+export default router; // Add this line to export as default

@@ -3,6 +3,7 @@ import Router from '@koa/router';
 import bodyParser from 'koa-bodyparser';
 import swagger from '../swagger/swagger.json';
 import { koaSwagger } from 'koa2-swagger-ui';
+import { WarehouseDatabase } from './models/warehouse-database';
 
 const app = new Koa();
 const router = new Router();
@@ -26,6 +27,11 @@ app.use(
     },
   })
 );
+
+app.use(async (ctx, next) => {
+  ctx.state.warehouse = new WarehouseDatabase('warehouse');
+  await next();
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {

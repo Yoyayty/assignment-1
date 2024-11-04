@@ -77,17 +77,27 @@ jobs:
 
       - name: Run tests
         run: npm run test:ci
-        
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node.js
+
+  generate-openapi:
+    name: Generate OpenAPI Client SDK
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-      - name: Install dependencies
-        run: npm install
-      - name: Generate OpenAPI
-        run: ./generate-openapi.sh
-      - name: Run Tests
-        run: npm test
+          node-version: '18'
 
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate OpenAPI Spec and Client SDK
+        run: ./generate-openapi.sh
+
+      - name: Upload OpenAPI Client SDK
+        uses: actions/upload-artifact@v2
+        with:
+          name: openapi-client-sdk
+          path: ./client
